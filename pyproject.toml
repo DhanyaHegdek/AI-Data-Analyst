@@ -1,0 +1,31 @@
+[project]
+name = "ai-data-analyst"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "dhanyashreemh", email = "dhanyashree@raakacloud.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "alembic>=1.19.2",
+    "email-validator>=2.3.0",
+    "fastapi>=0.141.1",
+    "psycopg[binary]>=3.3.5",
+    "pydantic>=2.13.5",
+    "python-dotenv>=1.2.3",
+    "sqlalchemy>=2.0.52",
+    "uvicorn>=0.52.4",
+]
+
+[project.scripts]
+ai-data-analyst = "ai_data_analyst:main"
+
+[build-system]
+requires = ["uv_build>=0.12.10,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
