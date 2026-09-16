@@ -1,4 +1,13 @@
 import { useState } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 function App() {
   const [question, setQuestion] = useState("");
@@ -37,12 +46,98 @@ function App() {
     }
   };
 
+  const renderVisualization = () => {
+    if (!result?.visualization || !result?.rows?.length) {
+      return null;
+    }
+
+    const visualization = result.visualization;
+    const rows = result.rows;
+
+    const xAxis = visualization.x_axis;
+    const yAxis = visualization.y_axis;
+
+    // Convert numeric values so Recharts can plot them correctly.
+    const chartData = rows.map((row) => ({
+      ...row,
+      [yAxis]: Number(row[yAxis]),
+    }));
+
+    return (
+      <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+        <h3 className="mb-6 text-lg font-semibold">
+          📈 Visualization
+        </h3>
+
+        <div className="mb-6 grid gap-2 text-sm text-slate-300">
+          <p>
+            <span className="text-slate-500">Chart:</span>{" "}
+            {visualization.chart_type}
+          </p>
+
+          <p>
+            <span className="text-slate-500">X-axis:</span>{" "}
+            {visualization.x_axis}
+          </p>
+
+          <p>
+            <span className="text-slate-500">Y-axis:</span>{" "}
+            {visualization.y_axis}
+          </p>
+
+          <p>
+            <span className="text-slate-500">Title:</span>{" "}
+            {visualization.title}
+          </p>
+        </div>
+
+        {visualization.chart_type === "bar" && (
+          <div className="h-[400px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={chartData}
+                margin={{
+                  top: 10,
+                  right: 30,
+                  left: 20,
+                  bottom: 70,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+
+                <XAxis
+                  dataKey={xAxis}
+                  angle={-25}
+                  textAnchor="end"
+                  interval={0}
+                  height={80}
+                />
+
+                <YAxis />
+
+                <Tooltip />
+
+                <Bar
+                  dataKey={yAxis}
+                  name={yAxis}
+                  fill="#6366f1"
+                  radius={[6, 6, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <header className="border-b border-slate-800">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div>
             <h1 className="text-xl font-bold">AI Data Analyst</h1>
+
             <p className="text-sm text-slate-400">
               Ask questions about your business data
             </p>
@@ -111,22 +206,33 @@ function App() {
 
         {result && (
           <section className="mx-auto mt-8 max-w-4xl space-y-6">
+            {/* Analysis */}
             <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-              <h3 className="mb-4 text-lg font-semibold">🤖 Analysis</h3>
+              <h3 className="mb-4 text-lg font-semibold">
+                🤖 Analysis
+              </h3>
+
               <p className="whitespace-pre-line text-slate-300">
                 {result.final_response}
               </p>
             </div>
 
+            {/* SQL */}
             <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-              <h3 className="mb-4 text-lg font-semibold">🔍 Generated SQL</h3>
+              <h3 className="mb-4 text-lg font-semibold">
+                🔍 Generated SQL
+              </h3>
+
               <pre className="overflow-x-auto rounded-xl bg-slate-950 p-4 text-sm text-slate-300">
                 {result.sql}
               </pre>
             </div>
 
+            {/* Query Results */}
             <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-              <h3 className="mb-4 text-lg font-semibold">📊 Query Results</h3>
+              <h3 className="mb-4 text-lg font-semibold">
+                📊 Query Results
+              </h3>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
@@ -134,7 +240,10 @@ function App() {
                     <tr className="border-b border-slate-700">
                       {result.rows?.[0] &&
                         Object.keys(result.rows[0]).map((key) => (
-                          <th key={key} className="px-4 py-3 text-slate-400">
+                          <th
+                            key={key}
+                            className="px-4 py-3 text-slate-400"
+                          >
                             {key}
                           </th>
                         ))}
@@ -143,7 +252,10 @@ function App() {
 
                   <tbody>
                     {result.rows?.map((row, index) => (
-                      <tr key={index} className="border-b border-slate-800">
+                      <tr
+                        key={index}
+                        className="border-b border-slate-800"
+                      >
                         {Object.values(row).map((value, valueIndex) => (
                           <td
                             key={valueIndex}
@@ -159,32 +271,8 @@ function App() {
               </div>
             </div>
 
-            {result.visualization && (
-              <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-                <h3 className="mb-4 text-lg font-semibold">
-                  📈 Visualization
-                </h3>
-
-                <div className="grid gap-3 text-sm text-slate-300">
-                  <p>
-                    <span className="text-slate-500">Chart:</span>{" "}
-                    {result.visualization.chart_type}
-                  </p>
-                  <p>
-                    <span className="text-slate-500">X-axis:</span>{" "}
-                    {result.visualization.x_axis}
-                  </p>
-                  <p>
-                    <span className="text-slate-500">Y-axis:</span>{" "}
-                    {result.visualization.y_axis}
-                  </p>
-                  <p>
-                    <span className="text-slate-500">Title:</span>{" "}
-                    {result.visualization.title}
-                  </p>
-                </div>
-              </div>
-            )}
+            {/* Visualization */}
+            {renderVisualization()}
           </section>
         )}
       </main>
