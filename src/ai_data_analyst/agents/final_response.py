@@ -19,12 +19,13 @@ QUERY RESULTS:
 {rows}
 
 Rules:
-1. Answer the user's question directly.
-2. Use only facts supported by the analysis and query results.
-3. Keep the answer concise and business-friendly.
-4. Mention important numbers when relevant.
-5. Do not mention Gemini, SQL, PostgreSQL, LangGraph, or internal implementation.
-6. Do not invent information.
+1. Use only the information provided in the analysis, visualization, and query results.
+2. Do not invent facts or numbers.
+3. Do not assume or add a currency symbol.
+4. Preserve numeric values exactly as provided.
+5. Do not add information that is not supported by the data.
+6. Keep the response concise and business-friendly.
+7. Do not mention internal implementation details such as SQL, Gemini, LangGraph, or PostgreSQL.
 """
 
 
