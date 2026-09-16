@@ -32,9 +32,13 @@ class AnalystState(TypedDict, total=False):
     error: str
 
 
-        # Structured interpretation of the question
+    # Structured interpretation of the question
     intent: str
     metric: str
     dimension: str
     filters: list[str]
     time_range: str
+
+
+
+    retry_count: int

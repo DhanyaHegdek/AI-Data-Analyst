@@ -9,6 +9,8 @@ from ai_data_analyst.agents.sql_generator import generate_sql
 from ai_data_analyst.agents.sql_validation import validate_sql_node
 from ai_data_analyst.agents.state import AnalystState
 from ai_data_analyst.agents.visualization import select_visualization
+from ai_data_analyst.agents.sql_fix import fix_sql
+from ai_data_analyst.agents.routing import validation_router
 
 
 def build_graph():
@@ -22,12 +24,23 @@ def build_graph():
     graph.add_node("analyze_results", analyze_results)
     graph.add_node("select_visualization", select_visualization)
     graph.add_node("final_response", create_final_response)
+    graph.add_node("fix_sql", fix_sql)
 
     graph.add_edge(START, "understand_question")
     graph.add_edge("understand_question", "retrieve_schema")
     graph.add_edge("retrieve_schema", "generate_sql")
     graph.add_edge("generate_sql", "validate_sql")
-    graph.add_edge("validate_sql", "execute_sql")
+    # graph.add_edge("validate_sql", "execute_sql")
+    graph.add_conditional_edges(
+        "validate_sql",
+        validation_router,
+        {
+            "execute_sql": "execute_sql",
+            "fix_sql": "fix_sql",
+            "final_response": "final_response",
+        },
+    )
+    graph.add_edge("fix_sql", "validate_sql")
     graph.add_edge("execute_sql", "analyze_results")
     graph.add_edge("analyze_results", "select_visualization")
     graph.add_edge("select_visualization", "final_response")
