@@ -33,9 +33,12 @@ USER QUESTION:
 """
 
 
-def generate_sql(question: str) -> str:
+def generate_sql(state: dict) -> dict:
+    question = state["question"]
+    schema = state["schema"]
+
     prompt = SQL_GENERATION_PROMPT.format(
-        schema=BUSINESS_SCHEMA,
+        schema=schema,
         question=question,
     )
 
@@ -66,4 +69,6 @@ def generate_sql(question: str) -> str:
             f"Unexpected Gemini response content type: {type(content)}"
         )
 
-    return sql
+    return {
+        "sql": sql
+    }
