@@ -1,5 +1,3 @@
-# the LLM first understands the question, then the agent retrieves the relevant database schema, and only then does Gemini generate SQL.
-
 BUSINESS_SCHEMA = """
 PostgreSQL business database schema:
 
