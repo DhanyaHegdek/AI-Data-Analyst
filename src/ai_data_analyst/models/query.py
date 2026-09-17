@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Text
+from sqlalchemy import DateTime, JSON, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ai_data_analyst.database.base import Base
@@ -17,6 +17,26 @@ class Query(Base):
     )
 
     generated_sql: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    result_rows: Mapped[list | None] = mapped_column(
+        JSON,
+        nullable=True,
+    )
+
+    analysis: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    visualization: Mapped[dict | None] = mapped_column(
+        JSON,
+        nullable=True,
+    )
+
+    final_response: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
     )
