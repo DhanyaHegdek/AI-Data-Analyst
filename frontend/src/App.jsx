@@ -16,7 +16,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showSql, setShowSql] = useState(false);
-
+  const [historySearch, setHistorySearch] = useState("");
   const [history, setHistory] = useState([]);
 
   const [showHistoryPage, setShowHistoryPage] = useState(false);
@@ -240,6 +240,15 @@ function App() {
                 <p className="mt-2 text-slate-400">
                   View your previous data analysis queries.
                 </p>
+                <div className="mt-6">
+                  <input
+                    type="text"
+                    placeholder="🔎 Search your previous queries..."
+                    value={historySearch}
+                    onChange={(e) => setHistorySearch(e.target.value)}
+                    className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-indigo-500"
+                  />
+                </div>
               </div>
 
               <button
@@ -262,51 +271,74 @@ function App() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {history.map((item, index) => {
-                  const rowCount = item.result_rows?.length ?? 0;
+              (() => {
+                const filteredHistory = history.filter((item) =>
+                  item.question
+                    ?.toLowerCase()
+                    .includes(historySearch.toLowerCase())
+                );
 
+                if (filteredHistory.length === 0) {
                   return (
-                    <button
-                      key={`${item.timestamp}-${index}`}
-                      type="button"
-                      onClick={() => {
-                        setQuestion(item.question);
-
-                        setResult({
-                          question: item.question,
-                          sql: item.generated_sql,
-                          rows: item.result_rows || [],
-                          analysis: item.analysis,
-                          visualization: item.visualization,
-                          final_response: item.final_response,
-                          error: null,
-                        });
-
-                        setError("");
-                        setShowSql(false);
-                        setShowHistoryPage(false);
-                      }}
-                      className="w-full rounded-2xl border border-slate-800 bg-slate-900 p-5 text-left transition hover:border-indigo-500/50 hover:bg-slate-800/70"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0">
-                          <p className="font-medium text-slate-200">
-                            {item.question}
-                          </p>
-                          <p className="mt-2 text-xs text-slate-500">
-                            {rowCount} {rowCount === 1 ? "row" : "rows"} returned
-                          </p>
-                        </div>
-
-                        <span className="shrink-0 text-xs text-slate-500">
-                          {item.timestamp}
-                        </span>
-                      </div>
-                    </button>
+                    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-10 text-center">
+                      <div className="text-4xl">🔎</div>
+                      <h3 className="mt-4 text-lg font-semibold text-slate-200">
+                        No matching queries
+                      </h3>
+                      <p className="mt-2 text-sm text-slate-500">
+                        Try a different search term.
+                      </p>
+                    </div>
                   );
-                })}
-              </div>
+                }
+
+                return (
+                  <div className="space-y-3">
+                    {filteredHistory.map((item, index) => {
+                      const rowCount = item.result_rows?.length ?? 0;
+                      return (
+                        <button
+                          key={`${item.timestamp}-${index}`}
+                          type="button"
+                          onClick={() => {
+                            setQuestion(item.question);
+
+                            setResult({
+                              question: item.question,
+                              sql: item.generated_sql,
+                              rows: item.result_rows || [],
+                              analysis: item.analysis,
+                              visualization: item.visualization,
+                              final_response: item.final_response,
+                              error: null,
+                            });
+
+                            setError("");
+                            setShowSql(false);
+                            setShowHistoryPage(false);
+                          }}
+                          className="w-full rounded-2xl border border-slate-800 bg-slate-900 p-5 text-left transition hover:border-indigo-500/50 hover:bg-slate-800/70"
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                              <p className="font-medium text-slate-200">
+                                {item.question}
+                              </p>
+                              <p className="mt-2 text-xs text-slate-500">
+                                {rowCount} {rowCount === 1 ? "row" : "rows"} returned
+                              </p>
+                            </div>
+
+                            <span className="shrink-0 text-xs text-slate-500">
+                              {item.timestamp}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })()
             )}
           </section>
         ) : (
