@@ -1,4 +1,4 @@
-from langchain_google_genai import ChatGoogleGenerativeAI  # pyright: ignore[reportMissingImports]
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from ai_data_analyst.core.config import GEMINI_API_KEY
 
