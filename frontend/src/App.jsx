@@ -17,20 +17,29 @@ function App() {
   const [error, setError] = useState("");
   const [showSql, setShowSql] = useState(false);
 
-  const [history, setHistory] = useState(() => {
-    const savedHistory = localStorage.getItem("ai-data-analyst-history");
-
-    return savedHistory ? JSON.parse(savedHistory) : [];
-  });
+  const [history, setHistory] = useState([]);
 
   const [showHistoryPage, setShowHistoryPage] = useState(false);
 
+  const loadHistory = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/history");
+
+      if (!response.ok) {
+        throw new Error("Failed to load history.");
+      }
+
+      const data = await response.json();
+
+      setHistory(data);
+    } catch (err) {
+      console.error("History loading failed:", err);
+    }
+  };
+
   useEffect(() => {
-    localStorage.setItem(
-      "ai-data-analyst-history",
-      JSON.stringify(history)
-    );
-  }, [history]);
+    loadHistory();
+  }, []);
 
   const analyzeData = async () => {
     if (!question.trim()) {
@@ -262,7 +271,7 @@ function App() {
             ) : (
               <div className="space-y-3">
                 {history.map((item, index) => {
-                  const rowCount = item.result?.rows?.length ?? 0;
+                  const rowCount = "—";
 
                   return (
                     <button
@@ -270,7 +279,7 @@ function App() {
                       type="button"
                       onClick={() => {
                         setQuestion(item.question);
-                        setResult(item.result);
+                        setShowHistoryPage(false);
                         setError("");
                         setShowSql(false);
                         setShowHistoryPage(false);
