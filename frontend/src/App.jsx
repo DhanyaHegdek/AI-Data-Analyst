@@ -14,6 +14,7 @@ function App() {
   const [question, setQuestion] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingStage, setLoadingStage] = useState(0);
   const [error, setError] = useState("");
   const [showSql, setShowSql] = useState(false);
   const [historySearch, setHistorySearch] = useState("");
@@ -48,8 +49,20 @@ function App() {
     }
 
     setLoading(true);
+    setLoadingStage(1);
     setError("");
     setResult(null);
+
+    const stageTimer = setInterval(() => {
+      setLoadingStage((current) => {
+        if (current >= 6) {
+          clearInterval(stageTimer);
+          return 6;
+        }
+
+        return current + 1;
+      });
+    }, 1200);
 
     try {
       const response = await fetch("http://127.0.0.1:8000/analyze", {
@@ -406,17 +419,83 @@ function App() {
 
             {loading && (
               <section className="mx-auto mt-6 max-w-4xl">
-                <div className="rounded-2xl border border-indigo-900/50 bg-indigo-950/20 p-6">
-                  <div className="flex items-center gap-3">
-                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-400/30 border-t-indigo-400" />
+                <div className="rounded-2xl border border-indigo-500/20 bg-slate-900 p-6 shadow-lg">
+                  <div className="mb-6 flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-lg">
+                      🤖
+                    </div>
+
                     <div>
                       <h3 className="font-semibold text-white">
-                        🤖 Analyzing your data
+                        Analyzing your data
                       </h3>
-                      <p className="mt-1 text-sm text-slate-400">
-                        Understanding your question, generating SQL, and analyzing the results...
+
+                      <p className="mt-1 text-sm text-slate-500">
+                        AI is processing your question...
                       </p>
                     </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {[
+                      "Understanding your question",
+                      "Retrieving database schema",
+                      "Generating SQL",
+                      "Validating SQL query",
+                      "Executing query",
+                      "Analyzing results",
+                    ].map((stage, index) => {
+                      const stageNumber = index + 1;
+                      const completed = loadingStage > stageNumber;
+                      const active = loadingStage === stageNumber;
+
+                      return (
+                        <div
+                          key={stage}
+                          className="flex items-center gap-3"
+                        >
+                          <div
+                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${completed
+                              ? "bg-emerald-500/15 text-emerald-400"
+                              : active
+                                ? "bg-indigo-500/15 text-indigo-400"
+                                : "bg-slate-800 text-slate-600"
+                              }`}
+                          >
+                            {completed ? "✓" : active ? "•••" : stageNumber}
+                          </div>
+
+                          <span
+                            className={`text-sm ${completed
+                              ? "text-emerald-400"
+                              : active
+                                ? "font-medium text-indigo-300"
+                                : "text-slate-600"
+                              }`}
+                          >
+                            {stage}
+                          </span>
+
+                          {active && (
+                            <span className="ml-auto text-xs text-indigo-400">
+                              Processing...
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-6 h-1.5 overflow-hidden rounded-full bg-slate-800">
+                    <div
+                      className="h-full rounded-full bg-indigo-500 transition-all duration-700"
+                      style={{
+                        width: `${Math.min(
+                          (loadingStage / 6) * 100,
+                          100
+                        )}%`,
+                      }}
+                    />
                   </div>
                 </div>
               </section>
@@ -466,26 +545,26 @@ function App() {
                 </div>
 
                 <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-                  <h3 className="mb-4 text-lg font-semibold">🤖 Analysis</h3>
-                  <div className="prose prose-invert max-w-none text-slate-300">
-                    <ReactMarkdown
-                      components={{
-                        p: ({ children }) => (
-                          <p className="mb-4 leading-7 text-slate-300">{children}</p>
-                        ),
-                        ol: ({ children }) => (
-                          <ol className="mb-4 list-decimal space-y-2 pl-6 text-slate-300">{children}</ol>
-                        ),
-                        ul: ({ children }) => (
-                          <ul className="mb-4 list-disc space-y-2 pl-6 text-slate-300">{children}</ul>
-                        ),
-                        strong: ({ children }) => (
-                          <strong className="font-semibold text-white">{children}</strong>
-                        ),
-                      }}
-                    >
-                      {result.final_response}
-                    </ReactMarkdown>
+                  <div className="mb-5 flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold">
+                        🤖 Analysis
+                      </h3>
+
+                      <p className="mt-1 text-sm text-slate-500">
+                        AI-generated insights from your query results
+                      </p>
+                    </div>
+
+                    <span className="rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-300">
+                      AI Insight
+                    </span>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-5">
+                    <div className="whitespace-pre-line text-[15px] leading-7 text-slate-300">
+                      {result.analysis || result.final_response}
+                    </div>
                   </div>
                 </div>
 
@@ -514,65 +593,108 @@ function App() {
                 </div>
 
                 <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-                  <h3 className="mb-4 text-lg font-semibold">📊 Query Results</h3>
+                  <div className="mb-5 flex items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-lg font-semibold">📊 Query Results</h3>
+                      <p className="mt-1 text-sm text-slate-500">
+                        Data returned from the executed SQL query
+                      </p>
+                    </div>
+
+                    {result.rows?.length > 0 && (
+                      <span className="shrink-0 rounded-full border border-slate-700 bg-slate-950 px-3 py-1 text-xs font-medium text-slate-400">
+                        {result.rows.length}{" "}
+                        {result.rows.length === 1 ? "row" : "rows"}
+                      </span>
+                    )}
+                  </div>
 
                   {result.rows?.length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-sm">
-                        <thead>
-                          <tr className="border-b border-slate-700">
-                            {result.rows?.[0] &&
-                              Object.keys(result.rows[0]).map((key) => (
+                    <div className="overflow-hidden rounded-xl border border-slate-800">
+                      <div className="max-h-[500px] overflow-auto">
+                        <table className="w-full min-w-max text-left text-sm">
+                          <thead className="sticky top-0 z-10 bg-slate-950">
+                            <tr className="border-b border-slate-700">
+                              <th className="sticky left-0 bg-slate-950 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                                #
+                              </th>
+
+                              {Object.keys(result.rows[0]).map((key) => (
                                 <th
                                   key={key}
-                                  className="whitespace-nowrap px-4 py-3 font-medium capitalize text-slate-400"
+                                  className="whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-slate-400"
                                 >
                                   {key.replace(/_/g, " ")}
                                 </th>
                               ))}
-                          </tr>
-                        </thead>
-
-                        <tbody>
-                          {result.rows?.map((row, index) => (
-                            <tr
-                              key={index}
-                              className="border-b border-slate-800 transition hover:bg-slate-800/50"
-                            >
-                              {Object.entries(row).map(([key, value], valueIndex) => {
-                                const isNumber =
-                                  typeof value === "number" ||
-                                  (!isNaN(value) && value !== "" && value !== null);
-
-                                const formattedValue =
-                                  isNumber && typeof value !== "boolean"
-                                    ? Number(value).toLocaleString("en-IN", {
-                                      maximumFractionDigits: 2,
-                                    })
-                                    : value;
-
-                                return (
-                                  <td
-                                    key={valueIndex}
-                                    className={`px-4 py-3 text-slate-300 ${isNumber ? "text-right tabular-nums" : ""
-                                      }`}
-                                  >
-                                    {formattedValue}
-                                  </td>
-                                );
-                              })}
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+
+                          <tbody>
+                            {result.rows.map((row, index) => (
+                              <tr
+                                key={index}
+                                className="border-b border-slate-800 last:border-b-0 transition hover:bg-indigo-500/5"
+                              >
+                                <td className="sticky left-0 bg-slate-900 px-4 py-3 text-xs font-medium text-slate-600">
+                                  {index + 1}
+                                </td>
+
+                                {Object.entries(row).map(([key, value], valueIndex) => {
+                                  const isNumber =
+                                    typeof value === "number" ||
+                                    (value !== null &&
+                                      value !== "" &&
+                                      !isNaN(Number(value)));
+
+                                  const isBoolean = typeof value === "boolean";
+
+                                  let formattedValue = value;
+
+                                  if (value === null || value === undefined) {
+                                    formattedValue = "—";
+                                  } else if (isBoolean) {
+                                    formattedValue = value ? "Yes" : "No";
+                                  } else if (isNumber) {
+                                    formattedValue = Number(value).toLocaleString("en-IN", {
+                                      maximumFractionDigits: 2,
+                                    });
+                                  }
+
+                                  return (
+                                    <td
+                                      key={valueIndex}
+                                      className={`whitespace-nowrap px-4 py-3 ${isNumber
+                                        ? "text-right font-medium tabular-nums text-slate-200"
+                                        : "text-slate-300"
+                                        }`}
+                                    >
+                                      {formattedValue}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="border-t border-slate-800 bg-slate-950/50 px-4 py-3">
+                        <p className="text-xs text-slate-500">
+                          Showing {result.rows.length}{" "}
+                          {result.rows.length === 1 ? "result" : "results"}
+                        </p>
+                      </div>
                     </div>
                   ) : (
-                    <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-8 text-center">
+                    <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-10 text-center">
                       <div className="text-3xl">📭</div>
+
                       <p className="mt-3 font-medium text-slate-300">
                         No results found
                       </p>
-                      <p className="mt-1 text-sm text-slate-500">
+
+                      <p className="mx-auto mt-1 max-w-md text-sm text-slate-500">
                         The query executed successfully, but no matching records were found.
                       </p>
                     </div>
