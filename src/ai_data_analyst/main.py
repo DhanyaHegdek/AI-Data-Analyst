@@ -2,7 +2,11 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from ai_data_analyst.agents.graph import analyst_graph
-from ai_data_analyst.services.query_history import save_query
+from ai_data_analyst.services.query_history import (
+    get_query_history,
+    save_query,
+)
+
 
 app = FastAPI(
     title="AI Data Analyst",
@@ -60,3 +64,18 @@ def analyze(request: AnalyzeRequest):
         "final_response": result.get("final_response"),
         "error": result.get("error"),
     }
+
+
+@app.get("/history")
+def history():
+    queries = get_query_history(limit=50)
+
+    return [
+        {
+            "id": query.id,
+            "question": query.question,
+            "generated_sql": query.generated_sql,
+            "created_at": query.created_at.isoformat(),
+        }
+        for query in queries
+    ]
