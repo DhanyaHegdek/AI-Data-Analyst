@@ -323,8 +323,4 @@ Not implemented in the current codebase:
 
 Reasonable future improvements include moving the backend URL into frontend configuration, adding typed API response schemas, adding tests around the graph and API, and adding authentication before exposing the service beyond local development.
 
-## Author
 
-**Dhanyashree M.**
-
-This project is maintained as a personal portfolio project.
