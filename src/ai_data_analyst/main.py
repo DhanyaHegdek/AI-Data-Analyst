@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from ai_data_analyst.agents.graph import analyst_graph
-
+from ai_data_analyst.services.query_history import save_query
 
 app = FastAPI(
     title="AI Data Analyst",
@@ -41,6 +41,13 @@ def analyze(request: AnalyzeRequest):
             "question": request.question,
         }
     )
+
+    # Save only successful analyses
+    if not result.get("error"):
+        save_query(
+            question=request.question,
+            generated_sql=result.get("sql"),
+        )
 
     return {
         "question": result.get("question"),
