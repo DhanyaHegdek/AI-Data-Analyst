@@ -81,6 +81,10 @@ def history():
             "id": query.id,
             "question": query.question,
             "generated_sql": query.generated_sql,
+            "result_rows": query.result_rows,
+            "analysis": query.analysis,
+            "visualization": query.visualization,
+            "final_response": query.final_response,
             "created_at": query.created_at.isoformat(),
         }
         for query in queries

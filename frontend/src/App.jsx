@@ -66,14 +66,7 @@ function App() {
 
       setResult(data);
 
-      setHistory((prev) => [
-        {
-          question: question.trim(),
-          result: data,
-          timestamp: new Date().toLocaleTimeString(),
-        },
-        ...prev,
-      ]);
+      await loadHistory();
     } catch (err) {
       console.error("Analysis error:", err);
 
@@ -271,7 +264,7 @@ function App() {
             ) : (
               <div className="space-y-3">
                 {history.map((item, index) => {
-                  const rowCount = "—";
+                  const rowCount = item.result_rows?.length ?? 0;
 
                   return (
                     <button
@@ -279,7 +272,17 @@ function App() {
                       type="button"
                       onClick={() => {
                         setQuestion(item.question);
-                        setShowHistoryPage(false);
+
+                        setResult({
+                          question: item.question,
+                          sql: item.generated_sql,
+                          rows: item.result_rows || [],
+                          analysis: item.analysis,
+                          visualization: item.visualization,
+                          final_response: item.final_response,
+                          error: null,
+                        });
+
                         setError("");
                         setShowSql(false);
                         setShowHistoryPage(false);
